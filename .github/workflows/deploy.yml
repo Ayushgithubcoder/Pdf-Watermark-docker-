@@ -1,0 +1,59 @@
+name: Deploy PDF Watermarker to Azure
+
+on:
+  push:
+    branches:
+      - main
+      - feat/deploy
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Provision & Deploy to Azure
+    runs-on: ubuntu-latest
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.6.2
+
+      - name: OpenTofu Init
+        working-directory: ./pdf-watermarker/tofu
+        run: tofu init
+
+      - name: OpenTofu Apply
+        working-directory: ./pdf-watermarker/tofu
+        run: tofu apply -auto-approve
+
+      - name: Log in to Azure CLI
+        uses: azure/login@v2
+        with:
+          creds: '{"clientId":"${{ secrets.ARM_CLIENT_ID }}","clientSecret":"${{ secrets.ARM_CLIENT_SECRET }}","subscriptionId":"${{ secrets.ARM_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.ARM_TENANT_ID }}"}'
+
+      - name: Log in to Azure Container Registry (ACR)
+        run: |
+          az acr login --name acrpdfwatermarkerprod
+
+      - name: Build & Push Docker Image to ACR
+        working-directory: ./pdf-watermarker
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          ACR_NAME="acrpdfwatermarkerprod.azurecr.io"
+          
+          docker build -t $ACR_NAME/pdf-watermarker:$IMAGE_TAG -t $ACR_NAME/pdf-watermarker:latest .
+          docker push $ACR_NAME/pdf-watermarker:$IMAGE_TAG
+          docker push $ACR_NAME/pdf-watermarker:latest
+
+      - name: Trigger Azure Web App Container Refresh
+        run: |
+          az webapp restart --name app-pdf-watermarker-prod --resource-group rg-pdf-watermarker
