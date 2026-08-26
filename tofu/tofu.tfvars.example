@@ -1,0 +1,9 @@
+# Terraform variable values
+# Environment: dev
+
+environment = "dev"
+
+location = "centralus"
+
+pdf_watermarker_service_image = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
+subscription_id = "your-95ccb98fd3c6"

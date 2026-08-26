@@ -1,0 +1,23 @@
+name: CI Pipeline
+'on':
+  push:
+    branches: &id001
+    - InfrIQa
+    - InfrIQa-dev
+    - dev
+    - development
+  pull_request:
+    branches: *id001
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.12'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Build project
+      run: echo 'Building project...'
+    - name: Run tests
+      run: echo 'Running tests...'

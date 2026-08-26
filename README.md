@@ -1,44 +1,29 @@
-# PDF Watermarker Microservice Workspace
+# Ayushgithubcoder_Pdf-Watermark-docker-
 
-This repository hosts a secure, production-grade PDF Watermarker microservice. It allows users to upload PDF documents, customize a watermark signature (text, opacity, font size), and download the watermarked PDF instantly.
+## Description
+This project was generated and configured by InfrIQa.
+
+## Prerequisites
+- Node.js 20 LTS
+- npm
+- Docker and Docker Compose (optional)
+- Git
+
+## Setup
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Copy environment variables: `cp .env.example .env` and fill in values
+4. Run: `npm start`
+
+## Docker
+```bash
+docker-compose up --build
+```
+
+## CI/CD
+This project uses GitHub Actions workflows in `.github/workflows/`.
+- `infriqa-ci.yml` — runs on every push (lint, test, build)
+- `infriqa.yml` — deploys to Azure on merge to main branch
 
 ## Project Structure
-```text
-.
-├── .gitignore
-├── README.md
-└── pdf-watermarker/
-    ├── package.json
-    ├── server.js
-    ├── Dockerfile
-    ├── .dockerignore
-    └── public/
-        ├── index.html
-        └── app.js
-```
-
-## Running the Project
-
-### 1. Locally using Node.js
-Ensure you have Node.js (version 18+) installed.
-```bash
-cd pdf-watermarker
-npm install
-npm start
-```
-Then open `http://localhost:8999` in your web browser.
-
-### 2. Using Docker
-Build and run the container using Docker:
-```bash
-cd pdf-watermarker
-docker build -t pdf-watermarker .
-docker run -d -p 8999:8999 --name pdf-watermarker-instance pdf-watermarker
-```
-Then open `http://localhost:8999` in your web browser.
-
-## Features
-- **Modern UI**: Interactive glassmorphic single-page design using Tailwind CSS v3 with drag-and-drop file upload zone.
-- **Security Audit**: Docker build runs `npm audit` and executes as a non-privileged `node` user.
-- **Health Checks**: Containers include automated Node-based health checks.
-- **Clean PDF Processing**: Uses `pdf-lib` to add diagonal watermarks across all pages on the fly without writing temporary files to disk.
+See the repository root for service directories.

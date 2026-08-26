@@ -1,0 +1,56 @@
+name: CD Pipeline
+'on':
+  push:
+    branches:
+    - InfrIQa
+    - InfrIQa-dev
+    - dev
+    - development
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+env:
+  AZURE_SUBSCRIPTION_ID: d6c69b8a-1b49-482e-80c0-95ccb98fd3c6
+  AZURE_RESOURCE_GROUP: Test-06-dev-rg
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.12'
+jobs:
+  deploy-backend-test-06-dev-pdf-watermarker-serv:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Login to Azure
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Set Active Azure Subscription
+      run: az account set --subscription ${{ env.AZURE_SUBSCRIPTION_ID }}
+    - name: Login to ACR
+      run: az acr login --name test01devinfrastructure1
+    - name: Build and Push Docker Image
+      run: |-
+        docker build -t test01devinfrastructure1.azurecr.io/test-06-dev-pdf-watermarker-serv:${{ github.sha }} -t test01devinfrastructure1.azurecr.io/test-06-dev-pdf-watermarker-serv:latest -f pdf-watermarker/Dockerfile pdf-watermarker
+        docker push test01devinfrastructure1.azurecr.io/test-06-dev-pdf-watermarker-serv:${{ github.sha }}
+        docker push test01devinfrastructure1.azurecr.io/test-06-dev-pdf-watermarker-serv:latest
+    - name: Deploy to Container App
+      run: |-
+        ACR_USER=$(az acr credential show --name test01devinfrastructure1 --query 'username' -o tsv)
+        ACR_PASS=$(az acr credential show --name test01devinfrastructure1 --query 'passwords[0].value' -o tsv)
+        az containerapp registry set \
+          --name test-06-dev-pdf-watermarker-serv \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --server test01devinfrastructure1.azurecr.io \
+          --username "$ACR_USER" \
+          --password "$ACR_PASS"
+        az containerapp ingress update \
+          --name test-06-dev-pdf-watermarker-serv \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --target-port 8999
+        az containerapp update \
+          --name test-06-dev-pdf-watermarker-serv \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --image test01devinfrastructure1.azurecr.io/test-06-dev-pdf-watermarker-serv:${{ github.sha }}
+    - name: Verify Container App Deployment
+      run: "echo 'Verifying container app deployment health at https://test-06-dev-pdf-watermarker-serv.politeisland-70a06caa.centralus.azurecontainerapps.io...'\nsuccess=false\nwait_sec=5\nfor i in {1..10}; do\n  if curl -s -f --connect-timeout 5 --max-time 10 \"https://test-06-dev-pdf-watermarker-serv.politeisland-70a06caa.centralus.azurecontainerapps.io/health\" > /dev/null || curl -s -f --connect-timeout 5 --max-time 10 \"https://test-06-dev-pdf-watermarker-serv.politeisland-70a06caa.centralus.azurecontainerapps.io/api/health\" > /dev/null || curl -s -f --connect-timeout 5 --max-time 10 \"https://test-06-dev-pdf-watermarker-serv.politeisland-70a06caa.centralus.azurecontainerapps.io\" > /dev/null; then\n    echo '\u2705 Container app health check passed!'\n    success=true\n    break\n  fi\n  echo \"Attempt $i failed. Retrying in ${wait_sec}s...\"\n  sleep $wait_sec\n  wait_sec=$((wait_sec * 2 > 120 ? 120 : wait_sec * 2))\ndone\nif [ \"$success\" = false ]; then\n  echo '\u274C Container\
+        \ app health check failed after all attempts.'\n  exit 1\nfi"

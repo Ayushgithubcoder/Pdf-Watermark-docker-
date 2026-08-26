@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install dependencies using clean install
 COPY package*.json ./
-RUN npm ci
+RUN npm ci || npm install --legacy-peer-deps --no-audit --no-fund
 
 # Run security audit (handled gracefully if warnings are found, but logs issues)
 RUN npm audit --audit-level=high || true

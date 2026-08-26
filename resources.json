@@ -1,0 +1,33 @@
+[
+  {
+    "subscription_id": "d6c69b8a-1b49-482e-80c0-95ccb98fd3c6",
+    "resource_group": "Test-06-dev-rg",
+    "github_repo": "Ayushgithubcoder/Pdf-Watermark-docker-",
+    "secret_name": "AZURE_CREDENTIALS",
+    "secret_profile_name": null,
+    "res_type": "azurerm_resource_group",
+    "resource_type": "infrastructure",
+    "azure_resource_type": "Microsoft.Resources/resourceGroups",
+    "identifier": "infrastructure_resource",
+    "category": "INFRASTRUCTURE",
+    "resource_name": "Test-06-dev-rg",
+    "deployment_method": null,
+    "generated_by": "antigravity_fix"
+  },
+  {
+    "subscription_id": "d6c69b8a-1b49-482e-80c0-95ccb98fd3c6",
+    "resource_group": "Test-06-dev-rg",
+    "github_repo": "Ayushgithubcoder/Pdf-Watermark-docker-",
+    "secret_name": "AZURE_CREDENTIALS",
+    "secret_profile_name": "container_app",
+    "res_type": "azurerm_container_app",
+    "resource_type": "container_app",
+    "azure_resource_type": "Microsoft.App/containerApps",
+    "identifier": "api_service",
+    "category": "BACKEND",
+    "resource_name": "test-06-dev-pdf-watermarker-serv",
+    "deployment_method": "container_app",
+    "generated_by": "antigravity_fix",
+    "endpoint": "https://test-06-dev-pdf-watermarker-serv--5yqxe5i.politeisland-70a06caa.centralus.azurecontainerapps.io"
+  }
+]
